@@ -1,6 +1,10 @@
 module Main where
 
-import Data.String.Strip
+import Args
+import Options.Applicative (execParser)
 
 main :: IO ()
-main = interact strip
+main = execParser app >>= run
+
+run :: Args -> IO ()
+run = putStrLn . show

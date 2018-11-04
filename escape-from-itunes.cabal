@@ -15,9 +15,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Data.String.Strip
+  exposed-modules:     Itunes
+                     , Args
+                     , Attributes
   build-depends:       base >= 4.7 && < 5
                      , idiii == 0.1.3.3
+                     , optparse-applicative == 0.14.3.0
+                     , regex-compat == 0.95.1
   default-language:    Haskell2010
 
 executable escape-from-itunes
@@ -26,16 +30,19 @@ executable escape-from-itunes
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , escape-from-itunes
+                     , optparse-applicative == 0.14.3.0
   default-language:    Haskell2010
 
 test-suite escape-from-itunes-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:       ArgsSpec
   build-depends:       base
                      , escape-from-itunes
                      , hspec
                      , QuickCheck
+                     , optparse-applicative == 0.14.3.0
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
