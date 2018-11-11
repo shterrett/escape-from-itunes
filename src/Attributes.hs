@@ -21,12 +21,13 @@ toAttribute "track" = Just Track
 toAttribute "composer" = Just Composer
 toAttribute _ = Nothing
 
-getAttribute :: Tag -> Attribute -> Maybe String
-getAttribute tag Artist = getArtist tag
-getAttribute tag Title = getTitle tag
-getAttribute tag Year = getYear tag
-getAttribute tag Track = getTrack tag
-getAttribute tag Composer = getFrameText "TCOM" tag
+getAttribute :: Attribute -> Tag -> Maybe String
+getAttribute Artist = getArtist
+getAttribute Title = getTitle
+getAttribute Album = getAlbum
+getAttribute Year = getYear
+getAttribute Track = getTrack
+getAttribute Composer = getFrameText "TCOM"
 
 getFrameText :: FrameID -> Tag -> Maybe String
 getFrameText frid tag = case tag^.frame frid of
