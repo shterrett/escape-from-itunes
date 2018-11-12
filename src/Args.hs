@@ -4,11 +4,13 @@ import Options.Applicative
 import Data.Semigroup ((<>))
 import Text.Regex (mkRegex, splitRegex)
 import Attributes
+import Actions (ActionType (DryRun, CopyFiles))
 
 data Args = Args {
           source :: String
           , target :: String
           , attributes :: [Attribute]
+          , action :: ActionType
           }
   deriving (Show, Eq)
 
@@ -23,6 +25,10 @@ getArgs = Args
       short 't' <>
       help "Root of new library")
   <*> attrList
+  <*> flag CopyFiles DryRun
+    ( long "dry-run" <>
+      short 'd' <>
+      help "Print intended work, but do not copy any files")
 
 attrList :: Parser [Attribute]
 attrList = option (maybeReader attrList) (

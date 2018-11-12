@@ -3,6 +3,7 @@ module ArgsSpec where
 import Test.Hspec
 import Options.Applicative
 import Attributes
+import Actions
 import Args
 
 spec = do
@@ -18,7 +19,8 @@ spec = do
                                         ])
         `shouldBe` (Just $ Args "/Users/shterrett/iTunesMusic"
                                 "/Users/shterrett/music"
-                                [Composer, Album, Artist])
+                                [Composer, Album, Artist]
+                                CopyFiles)
     it "parses properly supplied long arguments" $ do
       getParseResult (
         execParserPure defaultPrefs app [ "--source"
@@ -30,4 +32,29 @@ spec = do
                                         ])
         `shouldBe` (Just $ Args "/Users/shterrett/iTunesMusic"
                                 "/Users/shterrett/music"
-                                [Composer, Album, Artist])
+                                [Composer, Album, Artist]
+                                CopyFiles)
+    it "fails if the attribute list does not match allowed attributes" $ do
+      getParseResult (
+        execParserPure defaultPrefs app [ "--source"
+                                        , "/Users/shterrett/iTunesMusic"
+                                        , "--target"
+                                        , "/Users/shterrett/music"
+                                        , "--attributes"
+                                        , "composer,period,artist"
+                                        ])
+        `shouldBe` Nothing
+    it "sets the action to dry run when the flag is passed" $ do
+      getParseResult (
+        execParserPure defaultPrefs app [ "--source"
+                                        , "/Users/shterrett/iTunesMusic"
+                                        , "--target"
+                                        , "/Users/shterrett/music"
+                                        , "--attributes"
+                                        , "composer,album,artist"
+                                        , "--dry-run"
+                                        ])
+        `shouldBe` (Just $ Args "/Users/shterrett/iTunesMusic"
+                                "/Users/shterrett/music"
+                                [Composer, Album, Artist]
+                                DryRun)

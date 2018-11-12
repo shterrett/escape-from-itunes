@@ -17,6 +17,9 @@ data Copy = Copy { from :: From
                  , to :: To
                  }
 
+instance Show Copy where
+    show (Copy from to) = "Copy " ++ show from ++ " to " ++ to
+
 type Action = Copy -> IO ()
 type Transform = From -> IO To
 
