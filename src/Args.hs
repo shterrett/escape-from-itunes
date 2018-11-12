@@ -10,7 +10,7 @@ data Args = Args {
           source :: String
           , target :: String
           , attributes :: [Attribute]
-          , action :: ActionType
+          , actionType :: ActionType
           }
   deriving (Show, Eq)
 

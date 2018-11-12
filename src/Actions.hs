@@ -1,7 +1,8 @@
 module Actions where
 
 import Itunes (Copy (Copy))
-import System.Directory (copyFile)
+import System.Directory (createDirectoryIfMissing, copyFile)
+import System.FilePath (takeDirectory)
 
 data ActionType = DryRun
                 | CopyFiles
@@ -12,4 +13,5 @@ getAction DryRun = putStrLn . show
 getAction CopyFiles = copy
 
 copy :: Copy -> IO ()
-copy (Copy from to) = copyFile from to
+copy (Copy from to) = createDirectoryIfMissing True (takeDirectory to) >>
+                        copyFile from to

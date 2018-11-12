@@ -1,4 +1,10 @@
-module Itunes where
+module Itunes ( handleDirectory
+              , mkTransform
+              , Copy (Copy)
+              , Directory
+              , Transform
+              , Action
+              ) where
 
 import Control.Monad (filterM)
 import Data.List (foldl')

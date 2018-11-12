@@ -15,14 +15,15 @@ data Channel a = Channel (TVar Int) (TVar [a]) (TVar [a])
 newChannel :: Int -> STM (Channel a)
 newChannel size = Channel <$> (newTVar size) <*> (newTVar []) <*> (newTVar [])
 
-writeChan :: Channel a -> a -> STM ()
-writeChan (Channel size _read write) a = do
+writeChan :: [a] -> Channel a -> STM ()
+writeChan as (Channel size _read write) = do
+    let count = length as
     avail <- readTVar size
-    if avail == 0
+    if avail < count
       then retry
-      else writeTVar size (avail - 1)
+      else writeTVar size (avail - count)
     listend <- readTVar write
-    writeTVar write (a:listend)
+    writeTVar write (as ++ listend)
 
 readChan :: Channel a -> STM a
 readChan (Channel size read write) = do
