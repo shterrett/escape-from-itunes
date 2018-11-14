@@ -1,12 +1,20 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Main where
 
-import Control.Concurrent.Async (race_)
+import Control.Concurrent.Async (concurrently)
+import Control.Concurrent.BoundedChan ( BoundedChan
+                                      , readChan
+                                      , writeChan
+                                      , newBoundedChan
+                                      )
+import Control.Monad (forM_)
 import GHC.Conc.Sync (atomically, STM)
 import Options.Applicative (execParser)
 import Args
 import Itunes
 import Actions (getAction)
-import Channel
+import Debug.Trace
 
 main :: IO ()
 main = execParser app >>= run
@@ -14,23 +22,27 @@ main = execParser app >>= run
 run :: Args -> IO ()
 run args = let
     action = getAction (actionType args)
-    channel = newChannel 500 -- wild ass guess
+    channel = newBoundedChan 500 -- wild ass guess
     transform = mkTransform (target args) (attributes args)
-  in
-    (race_ (readSources channel transform [source args])
-                  (doAction channel action)) >>
-      putStrLn "finished"
+  in 
+    channel >>= (\c ->
+      (concurrently (readSources transform [source args] c)
+                    (doAction action c))) >>
+        putStrLn "finished"
 
-readSources ::  STM (Channel Copy) -> Transform -> [Directory] -> IO ()
-readSources _ _ [] = return ()
-readSources chan t (d:ds) = do
+readSources :: Transform ->
+               [Directory] ->
+               BoundedChan (Maybe Copy) ->
+               IO ()
+readSources _ [] chan = writeChan chan Nothing
+readSources t (d:ds) chan = do
     (dirs, copies) <- handleDirectory d t
-    atomically $ enqueueCopies chan copies
-    readSources chan t (ds ++ dirs)
+    forM_ (Just <$> copies) (writeChan chan)
+    readSources t (ds ++ dirs) chan
 
-enqueueCopies :: STM (Channel Copy) -> [Copy] -> STM ()
-enqueueCopies chan cs = chan >>= writeChan cs
-
-doAction :: STM (Channel Copy) -> Action ->  IO ()
-doAction chan action =
-    atomically (chan >>= readChan) >>= action
+doAction :: Action -> BoundedChan (Maybe Copy) -> IO ()
+doAction action chan = do
+    copy <- readChan chan
+    case copy of
+      (Just c) -> action c >> doAction action chan
+      Nothing -> return ()
